@@ -59,19 +59,25 @@ x = tf.placeholder(tf.float32, shape=[None, 2])
 y_in = tf.placeholder(tf.float32, shape=[None])
 y = tf.to_float(tf.one_hot(tf.to_int32(y_in), NR_OF_CLASSES))
 
-W = tf.Variable(tf.zeros([NR_OF_FEATURES, NR_OF_CLASSES]))
-b = tf.Variable(tf.zeros([2]))
-y_ = tf.nn.softmax(tf.matmul(x, W))
+def layer(x, n_in, n_out):
+  W = tf.Variable(tf.random_normal([n_in, n_out], stddev=0.1))
+  b = tf.Variable(tf.constant(0.1, shape=[n_out]))
+  return tf.nn.relu(tf.matmul(x, W) + b)
+
+l1 = layer(x, NR_OF_FEATURES, 10)
+l2 = layer(l1, 10, NR_OF_CLASSES)
+y_ = tf.nn.softmax(l2)
 y_pred = tf.argmax(y_, 1)
 loss = tf.reduce_mean(-tf.reduce_sum(tf.to_float(y) * tf.log(y_), reduction_indices=[1]))
-train_step = tf.train.GradientDescentOptimizer(0.5).minimize(loss)
+train_step = tf.train.GradientDescentOptimizer(1.0).minimize(loss)
 sess = tf.Session()
 sess.run(tf.initialize_all_variables())
 classifier = lambda x_in: sess.run(y_pred, {x: x_in})
 
-data, labels = generate_data_gaussians()# generate_data_circle()
-print 'loss', sess.run([loss, train_step], {x: data, y_in:labels})
-print 'loss', sess.run([loss, train_step], {x: data, y_in:labels})
-plot_classification(data, labels, classifier)
-plt.show()
-raw_input()
+data, labels = generate_data_xor_gaussians()# generate_data_circle()
+for i in range(20):
+  print 'loss', sess.run([loss, train_step], {x: data, y_in:labels})[0]
+  plt.figure(1)
+  plot_classification(data, labels, classifier)
+  plt.show()
+print 'Finished'
