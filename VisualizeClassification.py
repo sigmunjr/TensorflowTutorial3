@@ -37,12 +37,13 @@ def plot_classification(data, labels, clf):
     c_indices = labels == c
     plt.scatter(data[c_indices, 0], data[c_indices, 1], c=colors[i])
 
-def dummy_classifier(x):
-  return np.zeros(x.shape[0])
-
+data, labels = generate_data_gaussians()# generate_data_circle()
 classifier = lambda x: np.zeros(x.shape[0]) #REPLACE WITH REAL CLASSIFIER
 
-data, labels = generate_data_gaussians()# generate_data_circle()
-plot_classification(data, labels, dummy_classifier)
+
+#Make a classifier in tensorflow
+
+
+plot_classification(data, labels, classifier)
 plt.show()
 raw_input()
