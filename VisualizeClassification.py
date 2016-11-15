@@ -10,6 +10,17 @@ def generate_data_gaussians(centers=((-3, -3), (2, 2)), nr_of_points=100, ratio=
   return np.concatenate([gp, gn], 0), \
          np.concatenate([np.ones((nr_positives,)), np.zeros((nr_negatives,))])
 
+def generate_data_xor_gaussians(centers=((-2, -2), (2, 2), (2, -2), (-2, 2)), nr_of_points=100, ratio=0.5, std=1):
+  nr_positives = int(nr_of_points*ratio)
+  nr_negatives = int(nr_of_points*(1 - ratio))
+  gp1 = np.random.normal(centers[0], scale=std, size=(nr_positives/2, 2))
+  gp2 = np.random.normal(centers[1], scale=std, size=(nr_positives - nr_positives/2, 2))
+  gn1 = np.random.normal(centers[2], scale=std, size=(nr_negatives/2, 2))
+  gn2 = np.random.normal(centers[3], scale=std, size=(nr_negatives - nr_negatives/2, 2))
+  gp = np.concatenate([gp1, gp2], 0)
+  gn = np.concatenate([gn1, gn2], 0)
+  return np.concatenate([gp, gn], 0), \
+         np.concatenate([np.ones((nr_positives,)), np.zeros((nr_negatives,))])
 
 def generate_data_circle(radius=10, nr_of_points=100, ratio=0.5, noise=0.05):
   nr_positives = int(nr_of_points*ratio)
@@ -37,13 +48,28 @@ def plot_classification(data, labels, clf):
     c_indices = labels == c
     plt.scatter(data[c_indices, 0], data[c_indices, 1], c=colors[i])
 
+NUMBER_OF_CLASSES = 2
+NUMBER_OF_FEATURES = 2
+
+import tensorflow as tf
+x = tf.placeholder(tf.float32, [None, NUMBER_OF_FEATURES])
+y_in = tf.placeholder(tf.float32, [None])
+
+#BUILD your classifier here
+
+y_pred = 0*x[:, 0] #Replace with predicted class
+loss = tf.constant(0.0)
+train_step = tf.no_op() #Replace with training step
+
+
+sess = tf.Session()
+sess.run(tf.initialize_all_variables())
+classifier = lambda x_in: sess.run(y_pred, {x: x_in})
+
 data, labels = generate_data_gaussians()# generate_data_circle()
-classifier = lambda x: np.zeros(x.shape[0]) #REPLACE WITH REAL CLASSIFIER
-
-
-#Make a classifier in tensorflow
-
-
-plot_classification(data, labels, classifier)
-plt.show()
-raw_input()
+for i in range(20):
+  print 'loss', sess.run([loss, train_step], {x: data, y_in:labels})[0]
+  plt.figure(1)
+  plot_classification(data, labels, classifier)
+  plt.show()
+print 'Finished'
